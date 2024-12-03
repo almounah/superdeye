@@ -43,9 +43,9 @@ func NameRvaToString(pBase uintptr, rva DWORD) (string) {
     var res []byte
 	for i := uintptr(0); ; i++ {
 		char := *(*byte)(unsafe.Pointer(addr + i))
-        res = append(res, char)
         if char == 0 {
             return string(res)
         }
+        res = append(res, char)
 	}
 }
