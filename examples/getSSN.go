@@ -12,7 +12,7 @@ import (
 func main()  {
 
     ntdllHandle := windows.NewLazyDLL("ntdll.dll").Handle()
-    ssn, _ := manalocator.LookupSSN("NtCreateThread", superdwindows.HANDLE(ntdllHandle))
+    ssn, _ := manalocator.LookupSSN("NtQueryAttributesFile", superdwindows.HANDLE(ntdllHandle))
     fmt.Println(ssn)
     
 }

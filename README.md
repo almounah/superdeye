@@ -2,9 +2,9 @@
 
 ![superdeye](superd.png)
 
-SuperdEye is the implementation of TartarusGate by trickster0 in pure Go an Go Assembler.
+SuperdEye is the implementation of TartarusGate by trickster0 in pure Go and Go Assembler.
 
-The purpose is to scan hooked NTDLL and retreive the Syscall number to then do an indirect Syscall with it.
+The purpose is to scan hooked NTDLL and retreive the Syscall number to then do an indirect Syscall with it, thus allowing the bypass of AV/EDR that put hooks on functions.
 
 ## Usage
 

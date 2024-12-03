@@ -23,12 +23,30 @@ func LookupSSN(syscallName string, hModule superdwindows.HANDLE) (ssn uint8, err
 			fmt.Println("Found " + s)
 			functionAddress := uintptr(pBase) + uintptr(AddressOfFuntionArray[AddressOfNameOrdinalArray[num]])
 
-            if checkIfCleanSSN(functionAddress) {
-                low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 4))
-                high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 5))
+			if checkIfCleanSSN(functionAddress) {
+				low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 4))
+				high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 5))
 
-                return uint8((high << 8) | low), nil
-            }
+				return uint8((high << 8) | low), nil
+			}
+
+			// Search the neighbors if SSN is hooked
+			for neighborIndex := 1; neighborIndex < 200; neighborIndex++ {
+				upNeighborFunctionAddress := uintptr(unsafe.Add(unsafe.Pointer(functionAddress), neighborIndex*32))
+				if checkIfCleanSSN(upNeighborFunctionAddress) {
+					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 4))
+					high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 5))
+					return uint8((high<<8)|low) - uint8(neighborIndex), nil
+				}
+				downNeighborFunctionAddress := uintptr(unsafe.Add(unsafe.Pointer(functionAddress), -neighborIndex*32))
+				if checkIfCleanSSN(downNeighborFunctionAddress) {
+					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 4))
+					high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 5))
+					return uint8((high<<8)|low) + uint8(neighborIndex), nil
+				}
+
+			}
+
 		}
 	}
 	return 0, nil
@@ -42,10 +60,9 @@ func checkIfCleanSSN(functionAddress uintptr) bool {
 	val6 := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 6))
 	val7 := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 7))
 
-    if val0 == 0x4c && val1 == 0x8b && val2 == 0xd1 && val3 == 0xb8 && val6 == 0x00 && val7 == 0x00 {
-        return true
-    }
+	if val0 == 0x4c && val1 == 0x8b && val2 == 0xd1 && val3 == 0xb8 && val6 == 0x00 && val7 == 0x00 {
+		return true
+	}
 
-    return false
-
+	return false
 }
