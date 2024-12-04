@@ -235,4 +235,3 @@ type LDR_DATA_TABLE_ENTRY struct {
 	TimeDateStamp              ULONG
 }
 type PLDR_DATA_TABLE_ENTRY *LDR_DATA_TABLE_ENTRY
-

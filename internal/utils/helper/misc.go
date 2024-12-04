@@ -3,7 +3,8 @@ package helper
 import (
 	"fmt"
 	"unsafe"
-	"SuperdEye/pkg/superdwindows"
+
+	"superdeye/internal/utils/superdwindows"
 )
 
 func GetPEB() uintptr
@@ -38,23 +39,22 @@ func GetImageExportDirectory(hModule superdwindows.HANDLE) superdwindows.PIMAGE_
 	return pImgExportDir
 }
 
-func NameRvaToString(pBase uintptr, rva superdwindows.DWORD) (string) {
+func NameRvaToString(pBase uintptr, rva superdwindows.DWORD) string {
 	addr := uintptr(pBase + uintptr(rva))
 
-    var res []byte
+	var res []byte
 	for i := uintptr(0); ; i++ {
 		char := *(*byte)(unsafe.Pointer(addr + i))
-        if char == 0 {
-            return string(res)
-        }
-        res = append(res, char)
+		if char == 0 {
+			return string(res)
+		}
+		res = append(res, char)
 	}
 }
 
 func GetNTDLLAddress() superdwindows.HANDLE {
-    ppeb := superdwindows.PPEB64(unsafe.Pointer(uintptr(GetPEB())))
+	ppeb := superdwindows.PPEB64(unsafe.Pointer(uintptr(GetPEB())))
 
-    pDte := superdwindows.PLDR_DATA_TABLE_ENTRY(unsafe.Pointer(unsafe.Add(unsafe.Pointer(ppeb.LoaderData.InMemoryOrderModuleList.Flink.Flink), -0x10)))
-    return superdwindows.HANDLE(pDte.DllBase)
-
+	pDte := superdwindows.PLDR_DATA_TABLE_ENTRY(unsafe.Pointer(unsafe.Add(unsafe.Pointer(ppeb.LoaderData.InMemoryOrderModuleList.Flink.Flink), -0x10)))
+	return superdwindows.HANDLE(pDte.DllBase)
 }

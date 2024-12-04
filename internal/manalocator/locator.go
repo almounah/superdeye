@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"unsafe"
 
-	"SuperdEye/internal/utils/helper"
-	"SuperdEye/pkg/superdwindows"
+	"superdeye/internal/utils/helper"
+	"superdeye/internal/utils/superdwindows"
 )
 
 /*

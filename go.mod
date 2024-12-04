@@ -1,4 +1,4 @@
-module SuperdEye
+module superdeye
 
 go 1.23.1
 

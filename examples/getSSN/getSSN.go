@@ -6,10 +6,10 @@ import (
 
 	"golang.org/x/sys/windows"
 
-	"SuperdEye/internal/manalocator"
-	"SuperdEye/internal/superdsyscall"
-	"SuperdEye/internal/utils/helper"
-	"SuperdEye/pkg/superdwindows"
+	"superdeye/internal/manalocator"
+	"superdeye/internal/superdsyscall"
+	"superdeye/internal/utils/helper"
+	"superdeye/internal/utils/superdwindows"
 )
 
 func main() {
