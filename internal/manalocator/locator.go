@@ -37,7 +37,6 @@ func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (s
 		functionNameRVA := AddressOfNamesArray[num]
 		s := helper.NameRvaToString(uintptr(pBase), functionNameRVA)
 		if s == syscallName {
-			fmt.Println("Found " + s)
 			functionAddress := uintptr(pBase) + uintptr(AddressOfFuntionArray[AddressOfNameOrdinalArray[num]])
 
 			if checkIfCleanSSN(functionAddress) {
