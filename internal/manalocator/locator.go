@@ -9,6 +9,8 @@ import (
 	"github.com/almounah/superdeye/internal/utils/superdwindows"
 )
 
+var RANGE int = 200
+
 /*
  * ssn in the ssn number
  * cleanSyscall is the Syscall address found in NTDLL
@@ -20,7 +22,11 @@ type SuperdSyscallTool struct {
 
 func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (superdSyscallTool SuperdSyscallTool, err error) {
 	pBase := unsafe.Pointer(hModule)
-	pImgExportDir := helper.GetImageExportDirectory(hModule)
+	pImgExportDir, err := helper.GetImageExportDirectory(hModule)
+    if err != nil {
+        fmt.Println("Messed Up Getting Image Export Directory")
+        return SuperdSyscallTool{}, err
+    }
 	numFunction := pImgExportDir.NumberOfFunctions
 
 	AddressOfFuntionArray := unsafe.Slice((*superdwindows.DWORD)(unsafe.Pointer(uintptr(pBase)+uintptr(pImgExportDir.AddressOfFunctions))), pImgExportDir.NumberOfFunctions)
@@ -44,7 +50,7 @@ func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (s
 			}
 
 			// Search the neighbors if SSN is hooked
-			for neighborIndex := 1; neighborIndex < 200; neighborIndex++ {
+			for neighborIndex := 1; neighborIndex < RANGE; neighborIndex++ {
 				upNeighborFunctionAddress := uintptr(unsafe.Add(unsafe.Pointer(functionAddress), neighborIndex*32))
 				if checkIfCleanSSN(upNeighborFunctionAddress) {
 					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 4))
@@ -68,7 +74,7 @@ func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (s
 
 		}
 	}
-	return SuperdSyscallTool{0, 0}, nil
+	return SuperdSyscallTool{}, errors.New("Did not find SSN. Double Check Syscall Name then report as a Github issue as this is very interesting.")
 }
 
 func checkIfCleanSSN(functionAddress uintptr) bool {
@@ -87,7 +93,7 @@ func checkIfCleanSSN(functionAddress uintptr) bool {
 }
 
 func findSyscallAddress(functionAddress uintptr) (pAddress superdwindows.PVOID, err error) {
-	for z := 1; z < 200; z++ {
+	for z := 1; z < RANGE; z++ {
 		pAddress := unsafe.Add(unsafe.Pointer(functionAddress), z)
 		pAddressNext := unsafe.Add(unsafe.Pointer(functionAddress), z+1)
 

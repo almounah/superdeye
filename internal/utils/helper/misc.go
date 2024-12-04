@@ -1,7 +1,7 @@
 package helper
 
 import (
-	"fmt"
+	"errors"
 	"unsafe"
 
 	"github.com/almounah/superdeye/internal/utils/superdwindows"
@@ -9,34 +9,34 @@ import (
 
 func GetPEB() uintptr
 
-func GetImageExportDirectory(hModule superdwindows.HANDLE) superdwindows.PIMAGE_EXPORT_DIRECTORY {
+func GetImageExportDirectory(hModule superdwindows.HANDLE) (pImgExpDir superdwindows.PIMAGE_EXPORT_DIRECTORY, err error) {
 	pBase := unsafe.Pointer(hModule)
 	pImgDosHeader := superdwindows.PIMAGE_DOS_HEADER(pBase)
 	if pImgDosHeader.E_magic != superdwindows.IMAGE_DOS_SIGNATURE {
-		fmt.Println("Messed Up Getting the DosHeader")
+		return nil, errors.New("Messed Up Getting the DosHeader")
 	}
 
 	pImgNtHdrs := superdwindows.PIMAGE_NT_HEADERS32(unsafe.Pointer(uintptr(pBase) + uintptr(pImgDosHeader.E_lfanew)))
 	if pImgNtHdrs.Signature != superdwindows.IMAGE_NT_SIGNATURE {
-		fmt.Println("Messed Up getting NTHeader")
+		return nil, errors.New("Messed Up Getting NtHeader")
 	}
 
 	if pImgNtHdrs.FileHeader.Machine == superdwindows.IMAGE_FILE_MACHINE_AMD64 {
 		pImgNtHdrs64 := superdwindows.PIMAGE_NT_HEADERS64(unsafe.Pointer(pImgNtHdrs))
 		ImgOptHdr := pImgNtHdrs64.OptionalHeader
 		if ImgOptHdr.Magic != superdwindows.IMAGE_NT_OPTIONAL_HDR64_MAGIC {
-			fmt.Println("Messed Up getting Image Optional Header for x64 arch")
+			return nil, errors.New("Messed Up getting Image Optional Header for x64 arch")
 		}
 		pImgExportDir := superdwindows.PIMAGE_EXPORT_DIRECTORY(unsafe.Pointer(uintptr(pBase) + uintptr(ImgOptHdr.DataDirectory.VirtualAddress)))
 
-		return pImgExportDir
+		return pImgExportDir, nil
 	}
 	ImgOptHdr := pImgNtHdrs.OptionalHeader
 	if ImgOptHdr.Magic != superdwindows.IMAGE_NT_OPTIONAL_HDR32_MAGIC {
-		fmt.Println("Messed Up getting Image Optional Header for x64 arch")
+		return nil, errors.New("Messed Up getting Image Optional Header for x32 arch")
 	}
 	pImgExportDir := superdwindows.PIMAGE_EXPORT_DIRECTORY(unsafe.Pointer(uintptr(pBase) + uintptr(ImgOptHdr.DataDirectory.VirtualAddress)))
-	return pImgExportDir
+	return pImgExportDir,nil
 }
 
 func NameRvaToString(pBase uintptr, rva superdwindows.DWORD) string {

@@ -8,7 +8,10 @@ import (
 
 func SuperdSyscall(syscallName string, argh ...uintptr) (NTSTATUS uint32, err error) {
 	ntdllAddress := helper.GetNTDLLAddress()
-	syscallTool, _ := manalocator.LookupSSNAndTrampoline(syscallName, ntdllAddress)
+	syscallTool, err := manalocator.LookupSSNAndTrampoline(syscallName, ntdllAddress)
+    if err != nil {
+        return 0, err
+    }
 	NTSTATUS = superdsyscall.ExecIndirectSyscall(uint16(syscallTool.Ssn), uintptr(syscallTool.SyscallInstructionAddress), argh...)
 	return NTSTATUS, nil
 }
