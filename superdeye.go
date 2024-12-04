@@ -1,9 +1,9 @@
 package superdeye
 
 import (
-	"superdeye/internal/manalocator"
-	"superdeye/internal/superdsyscall"
-	"superdeye/internal/utils/helper"
+	"github.com/almounah/superdeye/internal/manalocator"
+	"github.com/almounah/superdeye/internal/superdsyscall"
+	"github.com/almounah/superdeye/internal/utils/helper"
 )
 
 func SuperdSyscall(syscallName string, argh ...uintptr) (NTSTATUS uint32, err error) {

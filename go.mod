@@ -1,4 +1,4 @@
-module superdeye
+module github.com/almounah/superdeye
 
 go 1.23.1
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"unsafe"
 
-	"superdeye/internal/utils/helper"
-	"superdeye/internal/utils/superdwindows"
+	"github.com/almounah/superdeye/internal/utils/helper"
+	"github.com/almounah/superdeye/internal/utils/superdwindows"
 )
 
 /*

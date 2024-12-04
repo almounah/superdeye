@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"unsafe"
 
-	"superdeye/internal/utils/superdwindows"
+	"github.com/almounah/superdeye/internal/utils/superdwindows"
 )
 
 func GetPEB() uintptr
