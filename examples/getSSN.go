@@ -1,18 +1,34 @@
 package main
 
 import (
-	"SuperdEye/internal/manalocator"
-	"SuperdEye/internal/utils/superdwindows"
 	"fmt"
+	"unsafe"
 
 	"golang.org/x/sys/windows"
+
+	"SuperdEye/internal/manalocator"
+	"SuperdEye/internal/superdsyscall"
+	"SuperdEye/internal/utils/superdwindows"
 )
 
+func main() {
+    var enter string;
+	ntdllHandle := windows.NewLazyDLL("ntdll.dll").Handle()
+	syscallTool, _ := manalocator.LookupSSNAndTrampoline("NtAllocateVirtualMemory", superdwindows.HANDLE(ntdllHandle))
+	fmt.Println(syscallTool.Ssn, syscallTool.SyscallInstructionAddress)
 
-func main()  {
+	size := 100
+    hSelf := uintptr(0xffffffffffffffff)
+    var baseAddr uintptr;
+	superdsyscall.ExecIndirectSyscall(uint16(syscallTool.Ssn), 
+        uintptr(syscallTool.SyscallInstructionAddress), 
+        hSelf, 
+        uintptr(unsafe.Pointer(&baseAddr)),
+		uintptr(unsafe.Pointer(nil)),
+		uintptr(unsafe.Pointer(&size)),
+		windows.MEM_COMMIT|windows.MEM_RESERVE,
+		windows.PAGE_EXECUTE_READWRITE,
+	)
 
-    ntdllHandle := windows.NewLazyDLL("ntdll.dll").Handle()
-    ssn, _ := manalocator.LookupSSN("NtQueryAttributesFile", superdwindows.HANDLE(ntdllHandle))
-    fmt.Println(ssn)
-    
+    fmt.Scanln(&enter)
 }

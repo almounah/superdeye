@@ -1,13 +1,23 @@
 package manalocator
 
 import (
+	"errors"
 	"fmt"
 	"unsafe"
 
 	"SuperdEye/internal/utils/superdwindows"
 )
 
-func LookupSSN(syscallName string, hModule superdwindows.HANDLE) (ssn uint8, err error) {
+/*
+ * ssn in the ssn number
+ * cleanSyscall is the Syscall address found in NTDLL
+ **/
+type SuperdSyscallTool struct {
+	Ssn                       uint8
+	SyscallInstructionAddress superdwindows.PVOID
+}
+
+func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (superdSyscallTool SuperdSyscallTool, err error) {
 	pBase := unsafe.Pointer(hModule)
 	pImgExportDir := superdwindows.GetImageExportDirectory(hModule)
 	numFunction := pImgExportDir.NumberOfFunctions
@@ -26,8 +36,10 @@ func LookupSSN(syscallName string, hModule superdwindows.HANDLE) (ssn uint8, err
 			if checkIfCleanSSN(functionAddress) {
 				low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 4))
 				high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 5))
-
-				return uint8((high << 8) | low), nil
+				ssn := uint8((high << 8) | low)
+				syscallAddress, _ := findSyscallAddress(functionAddress)
+				res := SuperdSyscallTool{ssn, syscallAddress}
+				return res, nil
 			}
 
 			// Search the neighbors if SSN is hooked
@@ -36,20 +48,26 @@ func LookupSSN(syscallName string, hModule superdwindows.HANDLE) (ssn uint8, err
 				if checkIfCleanSSN(upNeighborFunctionAddress) {
 					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 4))
 					high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 5))
-					return uint8((high<<8)|low) - uint8(neighborIndex), nil
+					ssn := uint8((high<<8)|low) - uint8(neighborIndex)
+					syscallAddress, _ := findSyscallAddress(upNeighborFunctionAddress)
+					res := SuperdSyscallTool{ssn, syscallAddress}
+					return res, nil
 				}
 				downNeighborFunctionAddress := uintptr(unsafe.Add(unsafe.Pointer(functionAddress), -neighborIndex*32))
 				if checkIfCleanSSN(downNeighborFunctionAddress) {
 					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 4))
 					high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 5))
-					return uint8((high<<8)|low) + uint8(neighborIndex), nil
+					ssn := uint8((high<<8)|low) + uint8(neighborIndex)
+					syscallAddress, _ := findSyscallAddress(downNeighborFunctionAddress)
+					res := SuperdSyscallTool{ssn, syscallAddress}
+					return res, nil
 				}
 
 			}
 
 		}
 	}
-	return 0, nil
+	return SuperdSyscallTool{0, 0}, nil
 }
 
 func checkIfCleanSSN(functionAddress uintptr) bool {
@@ -65,4 +83,19 @@ func checkIfCleanSSN(functionAddress uintptr) bool {
 	}
 
 	return false
+}
+
+func findSyscallAddress(functionAddress uintptr) (pAddress superdwindows.PVOID, err error) {
+	for z := 1; z < 200; z++ {
+		pAddress := unsafe.Add(unsafe.Pointer(functionAddress), z)
+		pAddressNext := unsafe.Add(unsafe.Pointer(functionAddress), z+1)
+
+		value := *(*superdwindows.BYTE)(pAddress)
+		valueNext := *(*superdwindows.BYTE)(pAddressNext)
+
+		if value == 0x0F && valueNext == 0x05 {
+			return superdwindows.PVOID(pAddress), nil
+		}
+	}
+	return 0, errors.New("Not Found Syscall instruction in Ntdll")
 }
