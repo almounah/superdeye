@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"unsafe"
 
-	"SuperdEye/internal/utils/superdwindows"
+	"SuperdEye/internal/utils/helper"
+	"SuperdEye/pkg/superdwindows"
 )
 
 /*
@@ -19,7 +20,7 @@ type SuperdSyscallTool struct {
 
 func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (superdSyscallTool SuperdSyscallTool, err error) {
 	pBase := unsafe.Pointer(hModule)
-	pImgExportDir := superdwindows.GetImageExportDirectory(hModule)
+	pImgExportDir := helper.GetImageExportDirectory(hModule)
 	numFunction := pImgExportDir.NumberOfFunctions
 
 	AddressOfFuntionArray := unsafe.Slice((*superdwindows.DWORD)(unsafe.Pointer(uintptr(pBase)+uintptr(pImgExportDir.AddressOfFunctions))), pImgExportDir.NumberOfFunctions)
@@ -28,7 +29,7 @@ func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (s
 
 	for num := superdwindows.DWORD(0); num < numFunction; num++ {
 		functionNameRVA := AddressOfNamesArray[num]
-		s := superdwindows.NameRvaToString(uintptr(pBase), functionNameRVA)
+		s := helper.NameRvaToString(uintptr(pBase), functionNameRVA)
 		if s == syscallName {
 			fmt.Println("Found " + s)
 			functionAddress := uintptr(pBase) + uintptr(AddressOfFuntionArray[AddressOfNameOrdinalArray[num]])

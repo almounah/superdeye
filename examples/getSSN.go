@@ -8,12 +8,13 @@ import (
 
 	"SuperdEye/internal/manalocator"
 	"SuperdEye/internal/superdsyscall"
-	"SuperdEye/internal/utils/superdwindows"
+	"SuperdEye/internal/utils/helper"
+	"SuperdEye/pkg/superdwindows"
 )
 
 func main() {
     var enter string;
-	ntdllHandle := windows.NewLazyDLL("ntdll.dll").Handle()
+	ntdllHandle := helper.GetNTDLLAddress()
 	syscallTool, _ := manalocator.LookupSSNAndTrampoline("NtAllocateVirtualMemory", superdwindows.HANDLE(ntdllHandle))
 	fmt.Println(syscallTool.Ssn, syscallTool.SyscallInstructionAddress)
 
