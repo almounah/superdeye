@@ -23,7 +23,7 @@ import (
 
 	NTSTATUS, err = superdeye.SuperdSyscall("NtCreateThreadEx", uintptr(unsafe.Pointer(&hThread)), uintptr(0x1FFFFF), uintptr(0), handleProcess, pBaseAddress, uintptr(0), uintptr(0), uintptr(0), uintptr(0), uintptr(0), uintptr(0))
 	if err != nil {
-        fmt.Println("Syscall Was not executed due. Likely the Syscall was not found or a bug...")
+        fmt.Println("Syscall was not executed... Likely the Syscall was not found or a bug...")
 		fmt.Println(err.Error())
 	}
 	fmt.Println("Syscall NtCreateThreadEx Made with NTSTATUS ", NTSTATUS)
@@ -43,7 +43,7 @@ import (
 ...
 	pBaseAddress, NTSTATUS, err := superdeye.NtAllocateVirtualMemory(windows.Handle(handleProcess), uintptr(0), uintptr(len(payloadClearText)), windows.MEM_COMMIT|windows.MEM_RESERVE, windows.PAGE_EXECUTE_READWRITE)
 	if err != nil {
-        fmt.Println("Syscall Was not executed due. Likely the Syscall was not found or a bug...")
+        fmt.Println("Syscall was not executed... Likely the Syscall was not found or a bug...")
 		fmt.Println(err.Error())
 	}
 	fmt.Println("Syscall NtAllocateVirtualMemory Made with NTSTATUS ", NTSTATUS)
@@ -60,7 +60,7 @@ Full examples are given in `examples/`
 
 It is the implementation of TartarusGate by trickster0 and HellHall by mrd0x and NUL0x4C in Go.
 
-Basically, a hooked NTDLL will be scanned. Once the target function is found, in case it is hooked by an AV or an EDR, a scan of the neighboors above and below will be made until a clean syscall is found. This will allow the calculation of the target function ssn. 
+Basically, a hooked NTDLL will be scanned. Once the target function is found, in case it is hooked by an AV or an EDR, a scan of the neighboors above and below will be made until a clean syscall is found. This will allow the calculation of the target function's ssn. 
 
 Once the ssn is found, an indirect syscall will be constructed.
 
@@ -81,6 +81,6 @@ Acheron on the other hand, use a totally different aproach than HellGate and Hel
 
 In [Mushoku Tensei](https://myanimelist.net/anime/39535/Mushoku_Tensei__Isekai_Ittara_Honki_Dasu) the Superd is a tribal Demonic Race from the Demon Continent. They have green emerald Hair and a third Eye on their forehead that let them perceive mana not detectable by others.
 
-The superd tribe are hated by Demons and Human alike due to historical reason. A Superd is hated and feared for just being a Superd.
+The superd tribe are hated by Demons and Human alike due to historical reasons. A Superd is hated and feared for just being a Superd.
 
 I named this project SuperdEye as it let you percieve syscall number and do indirect syscall, much like having a Superd Eye will let you detect mana and fight the enemy.
