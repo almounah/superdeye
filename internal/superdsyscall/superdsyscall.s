@@ -2,9 +2,9 @@
 
 #define maxargs 16
 
-// Superd Syscall is taken from acheron
-// acheron was taken from BananaPhone
-// BananaPhone was taken from go official syscall :p
+// Superd Syscall is taken from acheron syscall
+// acheron was inspired from BananaPhone
+// BananaPhone was inspired from go official syscall :p
 
 
 // func execIndirectSyscall(ssn uint16, trampoline uintptr, argh ...uintptr) uint32
