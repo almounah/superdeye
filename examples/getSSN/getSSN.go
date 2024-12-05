@@ -2,34 +2,24 @@ package main
 
 import (
 	"fmt"
-	"unsafe"
 
-	"golang.org/x/sys/windows"
-
-	"superdeye/internal/manalocator"
-	"superdeye/internal/superdsyscall"
-	"superdeye/internal/utils/helper"
-	"superdeye/internal/utils/superdwindows"
+	"github.com/almounah/superdeye/internal/manalocator"
+	"github.com/almounah/superdeye/internal/utils/helper"
 )
 
 func main() {
-    var enter string;
 	ntdllHandle := helper.GetNTDLLAddress()
-	syscallTool, _ := manalocator.LookupSSNAndTrampoline("NtAllocateVirtualMemory", superdwindows.HANDLE(ntdllHandle))
-	fmt.Println(syscallTool.Ssn, syscallTool.SyscallInstructionAddress)
 
-	size := 100
-    hSelf := uintptr(0xffffffffffffffff)
-    var baseAddr uintptr;
-	superdsyscall.ExecIndirectSyscall(uint16(syscallTool.Ssn), 
-        uintptr(syscallTool.SyscallInstructionAddress), 
-        hSelf, 
-        uintptr(unsafe.Pointer(&baseAddr)),
-		uintptr(unsafe.Pointer(nil)),
-		uintptr(unsafe.Pointer(&size)),
-		windows.MEM_COMMIT|windows.MEM_RESERVE,
-		windows.PAGE_EXECUTE_READWRITE,
-	)
-
-    fmt.Scanln(&enter)
+	for true {
+		fmt.Println("Enter Syscall Name: ")
+		var syscallName string
+		fmt.Scanln(&syscallName)
+		syscallTool, err := manalocator.LookupSSNAndTrampoline(syscallName, ntdllHandle)
+		if err != nil {
+			fmt.Println("Messed up ...")
+			fmt.Println(err)
+		} else {
+			fmt.Println("SSN for ", syscallName, " is ", syscallTool.Ssn)
+		}
+	}
 }
