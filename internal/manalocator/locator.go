@@ -16,7 +16,7 @@ var RANGE int = 200
  * cleanSyscall is the Syscall address found in NTDLL
  **/
 type SuperdSyscallTool struct {
-	Ssn                       uint8
+	Ssn                       uint32
 	SyscallInstructionAddress superdwindows.PVOID
 }
 
@@ -40,9 +40,9 @@ func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (s
 			functionAddress := uintptr(pBase) + uintptr(AddressOfFuntionArray[AddressOfNameOrdinalArray[num]])
 
 			if checkIfCleanSSN(functionAddress) {
-				low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 4))
-				high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 5))
-				ssn := uint8((high << 8) | low)
+				low := uint32(*(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 4)))
+				high := uint32(*(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(functionAddress), 5)))
+				ssn := uint32((high << 8) | low)
 				syscallAddress, _ := findSyscallAddress(functionAddress)
 				res := SuperdSyscallTool{ssn, syscallAddress}
 				return res, nil
@@ -52,18 +52,18 @@ func LookupSSNAndTrampoline(syscallName string, hModule superdwindows.HANDLE) (s
 			for neighborIndex := 1; neighborIndex < RANGE; neighborIndex++ {
 				upNeighborFunctionAddress := uintptr(unsafe.Add(unsafe.Pointer(functionAddress), neighborIndex*32))
 				if checkIfCleanSSN(upNeighborFunctionAddress) {
-					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 4))
-					high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 5))
-					ssn := uint8((high<<8)|low) - uint8(neighborIndex)
+					low := uint32(*(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 4)))
+					high := uint32(*(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(upNeighborFunctionAddress), 5)))
+					ssn := uint32((high<<8)|low) - uint32(neighborIndex)
 					syscallAddress, _ := findSyscallAddress(upNeighborFunctionAddress)
 					res := SuperdSyscallTool{ssn, syscallAddress}
 					return res, nil
 				}
 				downNeighborFunctionAddress := uintptr(unsafe.Add(unsafe.Pointer(functionAddress), -neighborIndex*32))
 				if checkIfCleanSSN(downNeighborFunctionAddress) {
-					low := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 4))
-					high := *(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 5))
-					ssn := uint8((high<<8)|low) + uint8(neighborIndex)
+					low := uint32(*(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 4)))
+					high := uint32(*(*superdwindows.BYTE)(unsafe.Add(unsafe.Pointer(downNeighborFunctionAddress), 5)))
+					ssn := uint32((high<<8)|low) + uint32(neighborIndex)
 					syscallAddress, _ := findSyscallAddress(downNeighborFunctionAddress)
 					res := SuperdSyscallTool{ssn, syscallAddress}
 					return res, nil
